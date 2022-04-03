@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <base target="_top">
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!--Import materialize.css-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUTO1 Invoicing Requests</title>
+</head>
+<?!= SITE_PAGES_MANAGER.include("index-css"); ?>
+
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <div id="page"><!--Open page container-->
+        <h1>Invoices Request</h1>
+        <div class="row"><!--Open dropdown row-->
+            <div class="input-field col s10">
+                <select id="invoiceType" class="validate" required="">
+                </select>
+                <label for="invoiceType">Invoices Type</label>
+            </div>
+        </div><!--Close dropdown row-->
+        <div id="container"></div><!--container div where form is-->
+    </div><!--Close page container-->
+
+    <div id="loading" class="loadingio-spinner-eclipse-0h8lo034c9jb">
+        <div class="ldio-5sy3rbz3ekb">
+            <div> </div>
+        </div>
+    </div>
+
+</body>
+<?!= SITE_PAGES_MANAGER.include("htmlgeneration-js"); ?>
+<?!= SITE_PAGES_MANAGER.include("index-js"); ?>
+<!--the "!" to evalute or execute the html, not treat it as just string-->
+
+</html>

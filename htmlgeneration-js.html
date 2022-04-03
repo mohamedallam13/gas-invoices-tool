@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<script>
+    ;
+    (function (root, factory) {
+        root.HTML_GENERATION = factory()
+    })(this, function () {
+
+        const HTML_GENERATION = {};
+
+        function initLinesModule(descriptions, lineTitle) {
+            var linesDiv = createLinesDiv();
+            var htmlString = generateLineBlock(1, descriptions, lineTitle);
+            var lineBlockHTML = document.createElement("template");
+            lineBlockHTML.innerHTML = htmlString;
+            linesDiv.appendChild(lineBlockHTML.content.firstChild);
+            return linesDiv;
+        }
+
+        function createLinesDiv() {
+            var linesDiv = document.createElement("div");
+            linesDiv.setAttribute('id', "linesDiv");
+            return linesDiv;
+        }
+
+        function generateStockIdBlock() {
+            var stockIdBlock =
+                '<div class="row">' +
+                '<div class="input-field col s10">' +
+                '<input id="stockId" type="text" class="validate" required="" pattern="^[a-zA-Z]{2}[0-9]{5}$">' +
+                '<label for="stockId">Stock ID</label>' +
+                '</div>' +
+                '</div>'
+            return stockIdBlock
+        }
+
+        function generateLineBlock(num, descriptions, lineTitle) {
+            var lineBlock = createlineBlockContainer(num);
+            var lineTitleRow = createTitleRowHTMLElement(lineTitle, num);
+            var inputsRow = createInputsRowHTMLElement(descriptions, num);
+            lineBlock.appendChild(lineTitleRow);
+            lineBlock.appendChild(inputsRow);
+            var lineBlockHTML = lineBlock.outerHTML;
+            return lineBlockHTML
+        }
+
+        function generateAddBlock() {
+            var addBlock =
+                '<div class="row"> ' +
+                '<div class="input-field col s2">' +
+                '<button id="add" class="waves-effect waves-light btn-small amber darken-3" onclick= "addLine()"><i class="material-icons left">add</i>Add Line</button>' +
+                '</div>' +
+                '</div>'
+            return addBlock
+        }
+
+        function generateAmountDescriptionBlock(descriptions) {
+            var inputsRow = createRowElement();
+            var amountCol = createColElement(2);
+            var amountInputHTMLText = createAmountInputAsInnerHTML();
+            amountCol.innerHTML = amountInputHTMLText;
+            var descriptionsCol = createColElement(8);
+            var descriptionsInputHTMLText = createDescriptionsInputAsInnerHTML(descriptions);
+            descriptionsCol.innerHTML = descriptionsInputHTMLText;
+            inputsRow.appendChild(amountCol);
+            inputsRow.appendChild(descriptionsCol);
+            var amountDescriptionBlock = inputsRow.outerHTML;
+            return amountDescriptionBlock
+        }
+
+        function generateSubmitButtonBlock() {
+            var submitButtonBlock =
+                '<div class="row">' +
+                '<div class="input-field col s4">' +
+                '<button id="submit" class="waves-effect waves-light btn-small amber darken-4" onclick= "submitForm()"><i class="material-icons left">chevron_right</i>Submit!</button>' +
+                '</div>' +
+                '</div>'
+            return submitButtonBlock
+        }
+
+        function createTitleRowHTMLElement(lineTitle,num) {
+            var titleRow = createRowElement();
+            var lineTitleBlock = createlineTitleBlock(lineTitle, num);
+            titleRow.appendChild(lineTitleBlock);
+            return titleRow;
+        }
+
+        function createInputsRowHTMLElement(descriptions, num) {
+            var inputsRow = createRowElement();
+            var amountCol = createColElement(2);
+            var amountInputHTMLText = createAmountInputAsInnerHTML(num);
+            amountCol.innerHTML = amountInputHTMLText;
+            var descriptionsCol = createColElement(6);
+            var descriptionsInputHTMLText = createDescriptionsInputAsInnerHTML(descriptions, num);
+            descriptionsCol.innerHTML = descriptionsInputHTMLText;
+            var removeLineCol = createColElement(2);
+            var removebuttonHTMLText = createRemoveButtonInnerHTML(num)
+            removeLineCol.innerHTML = removebuttonHTMLText;
+            inputsRow.appendChild(amountCol);
+            inputsRow.appendChild(descriptionsCol);
+            inputsRow.appendChild(removeLineCol);
+            return inputsRow;
+        }
+
+        function createlineBlockContainer(num) {
+            var lineBlockContainer = document.createElement("div");
+            lineBlockContainer.setAttribute("class", "lineBlock")
+            lineBlockContainer.setAttribute("id", "lineBlock" + num);
+            return lineBlockContainer;
+        }
+
+        function createRowElement() {
+            var rowElement = document.createElement("div");
+            rowElement.setAttribute("class", "row");
+            return rowElement;
+        }
+
+        function createColElement(colWidth) {
+            var colElement = document.createElement("div");
+            colElement.setAttribute('class', "input-field col s" + colWidth);
+            return colElement;
+        }
+
+        function createlineTitleBlock(lineTitle, num) {
+            var lineTitleBlock = document.createElement("p");
+            lineTitleBlock.setAttribute("class", "lineTitle");
+            lineTitleBlock.setAttribute("style", "font-weight: bold");
+            lineTitleBlock.innerHTML = lineTitle + ' #' + num;
+            return lineTitleBlock;
+        }
+
+        function createAmountInputAsInnerHTML(num) {
+            num = num || ""
+            var amountInputHTML =
+                '<input id="amount' + num +
+                '" type="text" class="validate" required="" pattern="^\\d*\\.?\\d*$">' +
+                '<label for="amount' + num + '">Amount</label>'
+            return amountInputHTML;
+        }
+
+        function createDescriptionsInputAsInnerHTML(descriptions, num) {
+            num = num || "";
+            var descriptionsOptions = descriptions.map(generateHTMLSelectOptions).join();
+            var descriptionsInputHTML =
+                '<select id="descriptionSelect' + num + '" class="validate" required="">' +
+                descriptionsOptions +
+                '</select>' +
+                '<label for="descriptionSelect' + num + '">Select Description</label>'
+            return descriptionsInputHTML;
+        }
+
+
+        function createRemoveButtonInnerHTML(num) {
+            var removeButtonHTML =
+                '<button id="removeLine' + num +
+                '" class="waves-effect waves-light btn-small amber darken-3" onclick= "removeLine(' + num +
+                ')"><i class="material-icons left">remove</i>Remove</button>'
+            return removeButtonHTML;
+        }
+
+        HTML_GENERATION.initLinesModule = initLinesModule;
+        HTML_GENERATION.generateStockIdBlock = generateStockIdBlock;
+        HTML_GENERATION.generateLineBlock = generateLineBlock;
+        HTML_GENERATION.generateAddBlock = generateAddBlock;
+        HTML_GENERATION.generateSubmitButtonBlock = generateSubmitButtonBlock;
+        HTML_GENERATION.generateAmountDescriptionBlock = generateAmountDescriptionBlock;
+
+        return HTML_GENERATION;
+    })
+</script>

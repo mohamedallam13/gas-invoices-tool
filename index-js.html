@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<script>
+    const GENERATORS = {
+        LPF: generateLPFForm,
+        AGAS: generateAGASForm
+    }
+
+    window.onload = load;
+
+    function initDropdowns() {
+        var dropdown = document.querySelectorAll('select');
+        var instances = M.FormSelect.init(dropdown);
+    }
+
+    function load() {
+        hidePage();
+        populateInvoiceTypes();
+        handleView();
+        setEventListener();
+        initDropdowns();
+        showPage();
+    }
+
+    function changeForm() {
+        hidePage();
+        handleView();
+        initDropdowns();
+        showPage();
+    }
+
+    function addLine() {
+        var invoiceType = getInvoiceType();
+        var formGenerator = GENERATORS[invoiceType]();
+        if (formGenerator.addNewLine) {
+            formGenerator.addNewLine();
+        }
+        initDropdowns();
+    }
+
+    function removeLine(num) {
+        var linesCount = getLinesCount()
+        if (linesCount > 1) {
+            var lineElement = document.getElementById("lineBlock" + num);
+            lineElement.outerHTML = "";
+            renumberLines();
+        }
+    }
+
+    function populateInvoiceTypes() {
+        var invoiceTypes = Object.keys(GENERATORS);
+        var invoicesTypesOptions = invoiceTypes.map(generateHTMLSelectOptions).join();
+        document.getElementById("invoiceType").innerHTML = invoicesTypesOptions;
+    }
+
+    function generateHTMLSelectOptions(list) {
+        return '<option>' + list + '</option>';
+    }
+
+    function showPage() {
+        toggleDisplay('page', true);
+        toggleDisplay('loading', false);
+    }
+
+    function hidePage() {
+        toggleDisplay('page', false);
+        toggleDisplay('loading', true);
+    }
+
+    function toggleDisplay(id, value) {
+        document.getElementById(id).style.display = value ? 'block' : 'none';
+    }
+
+    function setEventListener() {
+        document.getElementById("invoiceType").addEventListener("change", changeForm);
+    }
+
+    function handleView() {
+        var invoiceType = getInvoiceType();
+        console.log(invoiceType);
+        var formGenerator = GENERATORS[invoiceType]();
+        formGenerator.generateForm();
+    }
+
+    function getInvoiceType() {
+        var invoiceType = document.getElementById("invoiceType").value;
+        return invoiceType;
+    }
+
+    function generateLPFForm() {
+        var formGenerator = {};
+        const lpfDescriptions = ["LPF Type A", "LPF Type B"];
+        formGenerator.generateForm = function () {
+            var aggregatedBlocksHTMLString = buildLPFForm();
+            document.getElementById("container").innerHTML = aggregatedBlocksHTMLString;
+        }
+
+        function buildLPFForm() {
+            var aggregatedBlocksHTMLString = '';
+            aggregatedBlocksHTMLString += HTML_GENERATION.generateStockIdBlock();
+            aggregatedBlocksHTMLString += HTML_GENERATION.generateAmountDescriptionBlock(lpfDescriptions);
+            aggregatedBlocksHTMLString += HTML_GENERATION.generateSubmitButtonBlock();
+            return aggregatedBlocksHTMLString;
+        }
+        return formGenerator;
+    }
+
+    function generateAGASForm() {
+        var formGenerator = {};
+        const agasServices = ["service A", "service B", "service C"];
+        const lineTitle = "Service";
+
+        formGenerator.generateForm = function () {
+            var aggregatedBlocksHTMLString = buildAGASForm();
+            document.getElementById("container").innerHTML = aggregatedBlocksHTMLString;
+        }
+        formGenerator.addNewLine = function () {
+            var lineBlockHTML = createNewLine();
+            addLineToForm(lineBlockHTML);
+        }
+
+        function buildAGASForm() {
+            var aggregatedBlocksHTMLString = '';
+            aggregatedBlocksHTMLString += HTML_GENERATION.generateStockIdBlock();
+            var linesDiv = HTML_GENERATION.initLinesModule(agasServices, lineTitle);
+            aggregatedBlocksHTMLString += linesDiv.outerHTML;
+            aggregatedBlocksHTMLString += HTML_GENERATION.generateAddBlock();
+            aggregatedBlocksHTMLString += HTML_GENERATION.generateSubmitButtonBlock();
+            return aggregatedBlocksHTMLString;
+        }
+
+        function createNewLine() {
+            var linesCount = getLinesCount();
+            var htmlString = HTML_GENERATION.generateLineBlock(linesCount + 1, agasServices, "Service");
+            var lineBlockHTML = document.createElement("template");
+            lineBlockHTML.innerHTML = htmlString;
+            return lineBlockHTML;
+        }
+
+        function addLineToForm(lineBlockHTML) {
+            var linesDiv = document.getElementById("linesDiv");
+            linesDiv.appendChild(lineBlockHTML.content.firstChild);
+        }
+
+        return formGenerator;
+    }
+
+    function getLinesCount() {
+        var allLinesHTMLElements = document.querySelectorAll(".lineBlock");
+        var linesCount = allLinesHTMLElements.length;
+        return linesCount;
+    }
+
+    function renumberLines() {
+        var allLinesHTMLElements = document.querySelectorAll(".lineBlock");
+        allLinesHTMLElements.forEach((lineBlockElement, i) => {
+            var title = lineBlockElement.getElementsByClassName("lineTitle")[0];
+            var unnumberedTitle = title.innerHTML.replace(/[0-9]/g, '');
+            title.innerHTML = unnumberedTitle + parseInt(i + 1);
+        })
+    }
+
+    function submitForm() {
+        var answersObj = queryAllAnswers();
+        var validBool = validateAnswers(answersObj);
+        if (validBool) {
+            sendToBackCode(answersObj);
+        }
+    }
+
+    function queryAllAnswers() {
+        var inputElementsArr = document.querySelectorAll('input');
+        var HTMLAnswersObj = getHTMLAnswersObj(inputElementsArr);
+        return HTMLAnswersObj;
+    }
+
+    function getHTMLAnswersObj(inputElementsArr) {
+        var HTMLAnswersObj = {};
+        inputElementsArr.forEach((HTMLElement) => {
+            addSubmissionObjToAnswersObj(HTMLElement, HTMLAnswersObj);
+        })
+        addLineNumbers(HTMLAnswersObj);
+        return HTMLAnswersObj;
+    }
+
+    function addSubmissionObjToAnswersObj(HTMLElement, HTMLAnswersObj) {
+        var submissionObj = new SubmissionObj(HTMLElement);
+        var classifier = submissionObj.classifier;
+        if (!HTMLAnswersObj[classifier]) {
+            HTMLAnswersObj[classifier] = [];
+        }
+        HTMLAnswersObj[classifier].push(submissionObj);
+    }
+
+    function SubmissionObj(HTMLElement) {
+        if (HTMLElement.className.indexOf("select-dropdown") == -1) {
+            this.HTMLId = HTMLElement.id;
+            this.title = HTMLElement.parentElement.innerText;
+        } else {
+            var siblingElement = HTMLElement.nextElementSibling.nextElementSibling.nextElementSibling;
+            this.HTMLId = siblingElement.id;
+            this.title = HTMLElement.parentElement.nextElementSibling.innerText;
+        }
+        this.classifier = this.HTMLId.replace(/[0-9]/g, '')
+        this.value = HTMLElement.value;
+        this.validity = HTMLElement.checkValidity();
+    }
+
+    function addLineNumbers(HTMLAnswersObj) {
+        for (let classifier in HTMLAnswersObj) {
+            var answersArray = HTMLAnswersObj[classifier];
+            addLineNumbersToAnswerArrElements(answersArray);
+        }
+    }
+
+    function addLineNumbersToAnswerArrElements(answersArray) {
+        answersArray.forEach((answerElement, i) => {
+            if (/[0-9]/.test(answerElement.HTMLId)) {
+                answerElement.lineNumber = parseInt(i + 1);
+            }
+        })
+    }
+
+    function validateAnswers(answersObj) {
+        var validBool = true;
+        for (let field in answersObj) {
+            var answersObjArr = answersObj[field];
+            answersObjArr.forEach(answerObj => {
+                validBool = checkValidityAnswer(answerObj, validBool);
+            })
+        }
+        return validBool;
+    }
+
+    function checkValidityAnswer(answerObj, validBool) {
+        if (!answerObj.validity) {
+            warn(answerObj, " is invalid or empty!");
+            validBool = false;
+        }
+        return validBool;
+    }
+
+    function warn(answerObj, message) {
+        if (answerObj.lineNumber) {
+            message = answerObj.title + " for line " + answerObj.lineNumber + message;
+        } else {
+            message = answerObj.title + message;
+        }
+        toast(message);
+    }
+
+    function sendToBackCode(answersObj) {
+        console.log(answersObj)
+        google.script.run.withSuccessHandler(confirmSubmission).sendToSheets(answersObj);
+    }
+
+    function confirmSubmission(e) {
+        if (!e) {
+            changeForm();
+            toast("Submitted!");
+        } else {
+            toast("Submission failed!, reason: " + e);
+        }
+    }
+
+    function toast(message) {
+        M.toast({
+            html: message
+        });
+    }
+</script>
