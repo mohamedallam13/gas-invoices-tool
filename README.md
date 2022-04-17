@@ -23,7 +23,8 @@ A simple Google Apps Script WebApp to submit entries to sheet and relies on a co
 ## Features
 
 * Library that generates HTML modules and components that later is used to create the page elements
-* Form can add new rows and remove rows dynamically
+* Accepts different types of invoices with different conditions
+* Form can add new rows and remove rows dynamically for one type of invoices
 * Submits form response to the Google Apps Script backend which then writes into Google sheets
 
 
