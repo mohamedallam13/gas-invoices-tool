@@ -33,7 +33,7 @@ function addAdditionalParametersToAnswersObj(answersObj) {
 }
 
 function addTimestamp(answersObj) {
-  var timestamp = createTimestamp("dd.MM.YYYY HH:mm:ss");
+  var timestamp = createTimestamp("dd.MM.yyyy HH:mm:ss");
   answersObj.timestamp = [{
     value: timestamp
   }];
